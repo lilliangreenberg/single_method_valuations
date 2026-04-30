@@ -94,8 +94,20 @@ Feature: Multi-source company status analysis
       Then the status is stored as a manual override
       And the company is excluded from future batch snapshot capture by default
 
+    Scenario: Analyst clears a manual status override
+      Given a company has a manual status override set
+      When an analyst clears the override via the dashboard
+      Then the is_manual_override flag is removed
+      And subsequent analyze-status runs can update the status automatically
+
     Scenario: Baseline signals are computed for companies without prior analysis
       Given companies exist with snapshots but no baseline signals
       When the operator runs analyze-baseline
       Then baseline positive and negative signals are computed from full page content
       And those baselines are used to contextualise future change records
+
+    Scenario: Preview baseline analysis without writing
+      Given companies exist with snapshots but no baseline signals
+      When the operator runs analyze-baseline with --dry-run
+      Then the command reports how many companies would be analyzed
+      And no database writes occur

@@ -39,6 +39,23 @@ Feature: Operator identity attribution and access control
       Then credentials are stored in data/auth.json
       And subsequent CLI commands resolve the operator name from stored credentials
 
+    Scenario: Operator logs out of the CLI
+      Given the operator has stored credentials in data/auth.json
+      When the operator runs the logout command
+      Then stored credentials are cleared from data/auth.json
+      And the command confirms the logout
+
+    Scenario: Operator checks who is currently authenticated
+      Given the operator is authenticated as "Jane Smith"
+      When the operator runs the whoami command
+      Then the command displays the name and email of the authenticated user
+
+    Scenario: Whoami reports system user when OAuth is not configured
+      Given no Google OAuth credentials are set in the environment
+      When the operator runs the whoami command
+      Then the command reports that OAuth is not configured
+      And displays the OS system username
+
   Rule: Dashboard operator identity passes through to CLI subprocess calls
 
     Scenario: Dashboard triggers a pipeline run attributed to the logged-in analyst

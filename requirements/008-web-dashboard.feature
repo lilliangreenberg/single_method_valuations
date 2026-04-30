@@ -45,7 +45,7 @@ Feature: Web dashboard for portfolio monitoring
       And a freshness widget showing snapshot age across the portfolio
       And a company health grid with per-company status indicators
 
-  Rule: The companies view lists all portfolio companies with their status
+  Rule: The companies view lists all portfolio companies with rich filtering
 
     Scenario: View all companies with their current status
       Given companies with assessed statuses exist in the database
@@ -56,6 +56,32 @@ Feature: Web dashboard for portfolio monitoring
       Given companies with operational and likely_closed statuses exist
       When the analyst filters the company list to show only likely_closed companies
       Then only likely_closed companies are displayed
+
+    Scenario: Search companies by name
+      Given companies exist in the database
+      When the analyst types a partial name into the search field
+      Then only companies whose names contain that substring are shown
+
+    Scenario: Filter companies by source sheet
+      Given companies from multiple Airtable source sheets exist
+      When the analyst filters by a specific source sheet
+      Then only companies from that sheet are listed
+
+    Scenario: Filter companies with a manual status override
+      Given some companies have manual status overrides set
+      When the analyst filters by manual_override = yes
+      Then only manually-overridden companies are displayed
+
+    Scenario: Sort companies by last snapshot date
+      Given companies with different last snapshot dates exist
+      When the analyst sorts by last snapshot date descending
+      Then companies are ordered from most recently snapshotted to oldest
+
+    Scenario: Paginate through a large company list
+      Given more than one page of companies exist
+      When the analyst navigates to page 2
+      Then the second page of companies is displayed
+      And the total count and page number are shown
 
   Rule: The changes view shows recent content changes across the portfolio
 
@@ -96,10 +122,70 @@ Feature: Web dashboard for portfolio monitoring
       And change-frequency anomalies are shown
         (companies with spikes or droughts vs their historical baseline)
 
-  Rule: The full monitoring pipeline can be triggered from the dashboard
+  Rule: Analysts can perform per-company actions from the company detail page
 
-    Scenario: Trigger a full scan from the dashboard
+    Scenario: Rescrape a single company from its detail page
+      Given a company detail page is open in the dashboard
+      When the analyst triggers a rescrape action for that company
+      Then a capture-snapshots task is started for that company ID in the background
+      And the analyst can see the task progress on the page
+
+    Scenario: Run detect-changes for a single company from its detail page
+      Given a company detail page is open in the dashboard
+      When the analyst triggers a detect-changes action for that company
+      Then a detect-changes task is started for that company ID in the background
+
+    Scenario: Edit analyst notes from the company detail page
+      Given a company detail page is open
+      When the analyst submits updated notes in the notes form
+      Then the notes are saved and the updated text is displayed
+
+    Scenario: Clear a manual status override from the company detail page
+      Given a company has a manual status override set
+      When the analyst clicks the clear override control on the detail page
+      Then the is_manual_override flag is removed
+      And subsequent analyze-status runs can update the status automatically
+
+    Scenario: Delete a change record entry from the company detail page
+      Given a company has change records displayed on its detail page
+      When the analyst deletes a specific change record entry
+      Then that record is removed from the database
+      And the deletion is logged with the analyst's identity as performed_by
+
+    Scenario: Delete a news article entry from the company detail page
+      Given a company has news articles displayed on its detail page
+      When the analyst deletes a specific news article entry
+      Then that article is removed from the database
+      And the deletion is logged with the analyst's identity as performed_by
+
+  Rule: The operations panel runs CLI commands with real-time output streaming
+
+    @smoke
+    Scenario: Run the full scan from the operations panel
       Given the analyst is authenticated on the dashboard
-      When they trigger a full scan operation
-      Then the pipeline runs: snapshots, change detection, news search, status analysis
-      And a summary of each stage result is returned
+      When they submit the run-full-scan command from the operations panel
+      Then a background task is created and its ID is returned
+      And the analyst can poll for status updates
+
+    Scenario: Stream real-time CLI output for a running task
+      Given a background task has been started from the operations panel
+      When the analyst connects to the task stream endpoint
+      Then CLI output lines are delivered via SSE as the task runs
+      And a completion event is sent when the task finishes
+
+    Scenario: Cancel a running task from the operations panel
+      Given a background task is in progress
+      When the analyst submits a cancel request for that task
+      Then the task is terminated
+      And the task status changes to cancelled
+
+    Scenario: View task history in the operations panel
+      Given previous tasks have been run from the operations panel
+      When the analyst views the operations page
+      Then up to 20 recent tasks are listed with their status and timestamps
+
+    Scenario: Concurrent task limit is enforced
+      Given the maximum number of concurrent tasks are already running
+      When the analyst attempts to start another task
+      Then an error message is displayed
+      And no new task is created

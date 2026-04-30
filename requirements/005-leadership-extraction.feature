@@ -72,20 +72,70 @@ Feature: LinkedIn leadership extraction and change detection
         | COO     | critical |
         | VP      | notable  |
 
-  Rule: CEO and founder LinkedIn profiles are discoverable via Kagi search
+  Rule: CEO and founder LinkedIn profiles are discovered via the CDP browser
 
-    Scenario: Discover CEO LinkedIn URL via Kagi
-      Given a company has a leadership mention on its homepage naming a CEO
-      And a Kagi API key is configured
-      When the operator runs discover-ceo-linkedin for that company
-      Then a LinkedIn profile URL is found and stored in both company_leadership and social_media_links
-      And the discovery method is kagi_ceo_search
+    Scenario: CEO profile is found on the LinkedIn company People tab
+      Given a company with a LinkedIn company page exists
+      And the operator is logged in to LinkedIn
+      When the operator runs extract-leadership for that company
+      Then CEO and founder profiles are discovered from the People tab
+      And stored with discovery method cdp_scrape
 
-    Scenario: Dry-run shows what would be discovered without writing
-      Given companies with homepage leadership mentions exist
-      When the operator runs discover-ceo-linkedin with --dry-run
-      Then the command reports what would be discovered
-      And no database writes occur
+    @wip
+    Scenario: discover-ceo-linkedin command is disabled
+      Given the operator attempts to run discover-ceo-linkedin
+      When the command executes
+      Then a warning is printed stating the command is disabled
+      And the operator is directed to use extract-leadership instead
+      And no discovery is performed
+
+  Rule: Individual LinkedIn profiles can be inspected directly
+
+    Scenario: Scrape a personal LinkedIn profile with DOM and Vision
+      Given the operator is logged in to LinkedIn
+      And a LinkedIn profile URL is known
+      When the operator runs scrape-linkedin-profile with that URL
+      Then the profile is opened in the CDP browser
+      And DOM-extracted fields (name, headline, experience) are captured
+      And a screenshot is saved to the output directory
+      And when an Anthropic API key is configured Vision analysis adds current title and employer
+      And results are written to a JSON file in the output directory
+
+    Scenario: Auth wall detected when scraping without a saved session
+      Given no saved LinkedIn session exists
+      When the operator runs scrape-linkedin-profile for any URL
+      Then the command detects the LinkedIn auth wall
+      And instructs the operator to run linkedin-login first
+
+  Rule: Employment status is verified by visiting individual profiles with Claude Vision
+
+    @smoke
+    Scenario: Vision confirms a leader is still employed at the company
+      Given a company has a stored current CEO profile with a LinkedIn URL
+      When the operator runs check-leadership-changes for that company
+      Then the CEO's personal profile is visited via the CDP browser
+      And a screenshot is analysed by Claude Vision
+      And the result confirms current employment
+      And the leader's last_verified_at timestamp is updated
+
+    Scenario: Vision detects a leader has departed
+      Given a company has a stored current CTO profile with a LinkedIn URL
+      And that CTO's LinkedIn profile shows a different current employer
+      When the operator runs check-leadership-changes for that company
+      Then the CTO is marked as no longer current
+      And a leadership change record is created
+
+    Scenario: Vision identifies a wrong person match
+      Given a stored leader whose LinkedIn profile belongs to a different person
+      When employment verification processes that leader
+      Then the leader is marked as not current with status wrong_person
+      And the evidence is recorded in the leadership change record
+
+    Scenario: LinkedIn blocks the profile visit during verification
+      Given LinkedIn returns an access-blocked response for a profile URL
+      When employment verification attempts to visit that profile
+      Then the error is recorded with status error and confidence 0.0
+      And the leader's current status is left unchanged
 
   Rule: Leadership mentions are reconciled against known profiles
 

@@ -123,3 +123,9 @@ Feature: Website change detection and business significance classification
       Given a company has existing analyst notes
       When the operator runs set-company-notes with empty --notes
       Then the notes are removed from the database
+
+    Scenario: View current analyst notes for a company
+      Given a company has analyst notes set
+      When the operator runs get-company-notes for that company
+      Then the current notes are displayed
+      And if no notes are set the command reports that none exist

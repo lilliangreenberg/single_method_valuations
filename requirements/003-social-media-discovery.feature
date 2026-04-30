@@ -47,6 +47,12 @@ Feature: Social media and blog link discovery
       When the operator runs discover-social-full-site with --max-depth 2 --max-pages 20
       Then the crawl stops after 20 pages or depth 2, whichever comes first
 
+    Scenario: Run advanced batch full-site crawls with parallel workers
+      Given multiple companies with multi-page websites exist in the database
+      When the operator runs discover-social-batch with --max-workers 10
+      Then full-site crawls run in parallel across all companies
+      And a discovery summary reports links found per company
+
   Rule: Discovered links carry platform and account type metadata
 
     Scenario Outline: Platform is detected from profile URL

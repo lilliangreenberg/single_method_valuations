@@ -11,7 +11,10 @@ Resolving the five deferred items from the agent-method grill session, which are
 
 ## Decision Log
 
-(none yet)
+### DECIDED: Framework / library choices locked as fixed experiment inputs
+- **Decision**: FastAPI + SQLAlchemy ORM + Pydantic (implicit with FastAPI) + Alembic + pytest-bdd. Committed alongside the Gherkin. Architect prompt receives these as givens, never as choices. Schema setup via Alembic migrations (not `create_all()`).
+- **Rationale**: Architect agent must not choose frameworks — it would pick inconsistently across the 5 runs, making results incomparable. ORM chosen over Core for training-data consistency; pytest-bdd chosen over behave for pytest integration.
+- **Date**: 2026-04-30
 
 ## Open Threads
 

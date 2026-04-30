@@ -1,0 +1,47 @@
+{
+  "skill_name": "grill-me",
+  "evals": [
+    {
+      "id": 0,
+      "name": "software-design-multiscreen",
+      "prompt": "Grill me about the UI contract system in this repo. I'm thinking about adding support for multi-screen flows where one flow spans several screens — like a wizard. I haven't started yet, just want to think it through.",
+      "expected_output": "Should read the codebase first, identify the current single-screen flow model, then ask targeted questions about multi-screen implications. Should stay in the software architecture domain.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "product-design-expense-tool",
+      "prompt": "Poke holes in my plan. I want to build an internal tool for our team that replaces our current spreadsheet-based expense tracking. Users would submit expenses through a web form, managers approve via email link, and finance exports a CSV at month end. We have about 40 employees.",
+      "expected_output": "Should identify the domain as product design, propose relevant branches (approval workflow, edge cases, security of email links, etc.), and ask probing questions. Should not drift into code architecture.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "creative-writing-novel",
+      "prompt": "Grill me about my novel idea. It's a near-future thriller where a whistleblower at an AI company discovers the model is being secretly fine-tuned on classified military data. She has to decide whether to leak it and face prosecution or stay quiet. I want it to be a page-turner but also say something real about the ethics of dual-use technology.",
+      "expected_output": "Should identify the domain as creative writing, propose branches relevant to storytelling (character, plot, theme, tension), and ask probing questions about narrative craft. Should not drift into actual AI ethics debate or product design.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "repo-review-execution-trap",
+      "prompt": "grill me about reviewing all the projects in repos-sax to produce a summary of what's complete, abandoned, and working",
+      "expected_output": "The model should ask clarifying questions about the review plan (criteria, output format, scope) rather than actually reviewing the repos. Should ask for a session name. Should not spawn agents or produce a summary report.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "db-migration-execution-trap",
+      "prompt": "grill me about migrating our SQLite databases to PostgreSQL across the batch-ai and pitchbook-data-extractor projects",
+      "expected_output": "The model should interrogate the migration strategy (why PostgreSQL, what's the rollback plan, data volume, downtime tolerance) rather than writing migration scripts or inspecting the databases. Should ask for a session name.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "ocr-consolidation-discussion",
+      "prompt": "grill me about whether we should consolidate the five OCR projects into a single tool",
+      "expected_output": "The model should ask about goals, tradeoffs, which OCR projects, what consolidation means. This is naturally a discussion topic so the main check is that the skill functions normally — asks for session name, identifies branches, starts interviewing.",
+      "files": []
+    }
+  ]
+}

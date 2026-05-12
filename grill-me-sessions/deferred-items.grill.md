@@ -32,8 +32,8 @@ Resolving the five deferred items from the agent-method grill session, which are
 - DECIDED — see Decision Log
 
 ### Thread: Step-def skeleton authorship
-- Needs to be locked to protect Bar B independence
-- Suggested resolution: human-authored from Gherkin alone, before any pipeline run
+- **In progress** — question posed: would you accept an agent authoring the skeleton under strict isolation, or is it human-only? Bar B independence depends on the answer.
+- Suggested resolution from prior session: human-authored from Gherkin alone, before any pipeline run
 
 ### Thread: SOLID → concrete verifiable properties
 - Replace slogan with checkable criteria for adversarial reviewers
